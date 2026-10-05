@@ -1,0 +1,57 @@
+﻿# Direct Python dependencies for the live Sign2Text runtime â€” NVIDIA/CUDA profile.
+# For machines WITHOUT an NVIDIA GPU, use requirements.runtime-cpu.in instead.
+#
+# Verified against the checked-in .venv on Python 3.11.9.
+#
+# Runtime app paths covered here:
+# - backend/api_server.py
+# - backend/new_Inference.py
+# - backend/stt_backend.py
+# - backend/tts_backend.py
+# - backend/translate.py
+# - start.py
+#
+# Intentionally excluded from the live-app runtime set:
+# - offline keypoint-extraction and model-training tooling: maintained
+#   privately, not published in this repository. Needs additional packages
+#   such as pandas and tensorboard.
+# - tests/: pytest-only dependencies. Use requirements.test.txt for validation.
+#
+# Environment/system requirements still outside pip:
+# - external ASL checkpoint file
+# - local webcam access
+# - Ollama service + model
+# - Google/Azure credentials
+# - CUDA-compatible drivers/runtime for the GPU torch/onnxruntime builds below
+#
+# rtmlib 0.0.15 declares a dependency on the CPU-named "onnxruntime" package
+# even when this project intentionally runs on the GPU build. The local
+# compatibility metapackage below keeps the environment reproducible and makes
+# pip's dependency checks consistent without changing the actual runtime engine.
+#
+# PyTorch CUDA wheels are distributed from the official PyTorch wheel index.
+# Keeping the extra index explicit here makes fresh-machine installs reproducible
+# without relying on per-user pip configuration.
+
+./packaging/onnxruntime-meta/dist/onnxruntime-1.24.2-py3-none-any.whl
+--extra-index-url https://download.pytorch.org/whl/cu128
+
+fastapi==0.128.0
+google-auth==2.48.0
+google-cloud-speech==2.36.0
+google-cloud-texttospeech==2.34.0
+httpx==0.28.1
+itsdangerous==2.2.0
+numpy==2.4.2
+onnxruntime-gpu==1.24.2
+opencv-contrib-python==4.13.0.92
+opencv-python==4.13.0.92
+# Required by backend/our_pipeline (universal-ml-v4 vendored) when ASL_PIPELINE=ours
+omegaconf==2.3.0
+hydra-core==1.3.2
+pydantic==2.12.5
+requests==2.32.5
+rtmlib==0.0.15
+starlette==0.50.0
+torch==2.10.0+cu128
+uvicorn==0.40.0

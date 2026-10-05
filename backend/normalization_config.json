@@ -1,0 +1,24 @@
+{
+  "mode": "strict_asl_normalization",
+  "max_sentences": 1,
+  "max_extra_words": 4,
+  "max_output_length_multiplier": 3.0,
+  "max_absolute_output_words": 12,
+  "allowed_helper_words": [
+    "is", "are", "am", "was", "were",
+    "the", "a", "an",
+    "do", "does", "did",
+    "what", "where", "how", "who", "why", "when",
+    "to", "of", "and", "in", "on", "at", "for", "not",
+    "have", "has", "had",
+    "i", "you", "he", "she", "it", "we", "they",
+    "my", "your", "his", "her", "its", "our", "their",
+    "me", "him", "us", "them", "that", "this", "with"
+  ],
+  "forbid_new_actions": true,
+  "forbid_unrelated_clauses": true,
+  "require_question_preservation": true,
+  "fallback_to_safe_normalization": true,
+  "require_json_output": true,
+  "sentence_end_punctuation": [".", "?", "!"]
+}

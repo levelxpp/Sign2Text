@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--
+  index.html — Sign2Text application shell.
+
+  PUBLIC-REPOSITORY NOTE
+  ----------------------
+  The private project's index.html is majority teammate-authored and is not
+  mine to publish. This is an independently written shell providing the same
+  DOM contract that app.js expects, so the frontend in this repository is
+  coherent and reviewable.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign2Text — Live ASL Captioning</title>
+
+  <!-- Service endpoints. start.py overrides these via runtime-config.js. -->
+  <meta name="backend-base" content="http://127.0.0.1:8001" />
+  <meta name="asl-backend-base" content="http://127.0.0.1:8000" />
+  <meta name="letter-backend-base" content="http://127.0.0.1:8002" />
+
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="runtime-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+
+<body>
+  <!-- ── Consent gate ───────────────────────────────────────────────────
+       Shown before any camera or microphone access. app.js will not open a
+       device until this is accepted. -->
+  <div id="consent-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="consent-title" hidden>
+    <div class="modal-panel">
+      <h2 id="consent-title">Camera &amp; microphone access</h2>
+      <p>
+        Sign2Text processes camera frames and microphone audio to generate live
+        captions. Nothing is recorded or stored on a server unless you
+        explicitly save a transcript while signed in.
+      </p>
+      <p class="modal-links">
+        <a href="privacy.html">Privacy Policy</a> ·
+        <a href="terms.html">Terms of Use</a>
+      </p>
+      <div class="modal-actions">
+        <button id="consent-decline" type="button" class="btn btn-ghost">Decline</button>
+        <button id="consent-accept" type="button" class="btn btn-primary">Accept &amp; continue</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="app-header">
+    <a class="brand" href="/">
+      <span class="material-symbols-outlined" aria-hidden="true">sign_language</span>
+      <span class="brand-name">Sign2Text</span>
+    </a>
+
+    <!-- ── Mode selection ─────────────────────────────────────────────── -->
+    <nav class="mode-switch" role="tablist" aria-label="Input mode">
+      <button id="mode-asl"    type="button" role="tab" class="mode-btn" aria-selected="true">ASL</button>
+      <button id="mode-speech" type="button" role="tab" class="mode-btn" aria-selected="false">Voice</button>
+      <button id="mode-letter" type="button" role="tab" class="mode-btn" aria-selected="false">Letter</button>
+    </nav>
+
+    <div class="header-right">
+      <!-- Session history -->
+      <div class="history-wrap">
+        <button id="history-menu-button" type="button" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-label="Session history">
+          <span class="material-symbols-outlined" aria-hidden="true">history</span>
+        </button>
+        <div id="history-menu" class="dropdown" hidden>
+          <div class="dropdown-head">
+            <span>Saved sessions</span>
+            <button id="history-clear-all" type="button" class="btn-link">Clear all</button>
+          </div>
+          <ul id="history-list" class="history-list"></ul>
+          <p id="history-empty" class="history-empty">No saved sessions yet.</p>
+        </div>
+      </div>
+
+      <button id="profile-button" type="button" class="icon-btn" aria-label="Account">
+        <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Shown when a signed-out user reaches an action that needs auth. -->
+  <div id="auth-required-banner" class="banner banner-warn" role="status" hidden>
+    Sign in to sync this session across devices.
+  </div>
+
+  <main class="app-main">
+    <!-- ── Video stage ─────────────────────────────────────────────────
+         kp-canvas overlays the skeleton/keypoint rendering on the video. -->
+    <section class="stage" aria-label="Camera preview">
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="kp-canvas" class="kp-overlay" aria-hidden="true"></canvas>
+      <p id="lang-mode-hint" class="stage-hint"></p>
+    </section>
+
+    <!-- ── Captions ───────────────────────────────────────────────────── -->
+    <section class="caption-panel" aria-label="Live captions">
+      <div id="captions" class="captions" role="log" aria-live="polite" aria-atomic="false"></div>
+
+      <div class="caption-size">
+        <label for="captionSize">Caption size</label>
+        <input id="captionSize" type="range" min="14" max="48" step="1" value="24" />
+        <output id="captionSizeLabel">24px</output>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Transport controls ─────────────────────────────────────────────
+       app.js owns enable/disable state; all start disabled except Start. -->
+  <footer class="controls">
+    <div class="controls-row">
+      <button id="start"    type="button" class="btn btn-primary">Start</button>
+      <button id="pause"    type="button" class="btn" disabled>Pause</button>
+      <button id="resume"   type="button" class="btn" disabled>Resume</button>
+      <button id="stop"     type="button" class="btn" disabled>Stop</button>
+    </div>
+    <div class="controls-row">
+      <button id="new-chat" type="button" class="btn btn-ghost">New chat</button>
+      <button id="clear"    type="button" class="btn btn-ghost">Clear</button>
+      <button id="save"     type="button" class="btn btn-ghost">Download transcript</button>
+    </div>
+    <p id="ui-status-text" class="status" role="status" aria-live="polite">Ready.</p>
+
+    <nav class="legal-footer" aria-label="Legal">
+      <a href="privacy.html">Privacy Policy</a> ·
+      <a href="terms.html">Terms of Use</a>
+    </nav>
+  </footer>
+
+  <!-- ── History row template ───────────────────────────────────────────
+       Cloned per saved session by app.js. Class names here are part of the
+       contract: app.js queries them with querySelector on the clone. -->
+  <template id="history-item-template">
+    <li class="history-item">
+      <button type="button" class="history-item-open">
+        <span class="history-snippet"></span>
+        <span class="history-meta"></span>
+      </button>
+      <div class="history-item-menu-wrap">
+        <button type="button" class="history-item-menu-button" aria-label="Session options">
+          <span class="material-symbols-outlined" aria-hidden="true">more_vert</span>
+        </button>
+        <div class="history-item-menu" hidden>
+          <button type="button" class="history-item-delete">Delete</button>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

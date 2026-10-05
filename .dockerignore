@@ -1,0 +1,74 @@
+﻿# .dockerignore - Sign2Text Docker build context exclusions
+#
+# Keep this file accurate: anything excluded here will NOT be present inside
+# the container. Items that are required for runtime MUST NOT appear here.
+#
+# Required at runtime (must NOT be excluded):
+#   backend/                        - all five service modules
+#   frontend/                       - static assets served by frontend_server.py
+#   landing/dist/                   - compiled landing page (Vite output)
+#   third_party/                    - vendored runtime dependencies
+#   packaging/onnxruntime-meta/dist/ - local wheel referenced by requirements.runtime.txt
+#   valid_words.txt                 - used by letter word-boundary logic
+#   requirements.runtime*.txt       - pip install inputs
+#   start.py, start_server.sh, tunnel_proxy.py, setup_runpod.sh
+#   popsign_aslcitizen_semlex6_gcn_big/ - ASL model checkpoint bundle at repo root, if present
+
+# Version control
+.git/
+.gitignore
+
+# Secrets and local environment - NEVER enter build context
+.env
+.env.*.local
+keys/
+
+# Runtime database and collected data - mount as volume, not baked in
+data/
+
+# Python caches and compiled artifacts
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments (Dockerfile creates its own inside the image)
+.venv/
+.venv_repro_check/
+.venv_repro_final/
+
+# Node / frontend build inputs (only landing/dist is needed at runtime)
+node_modules/
+landing/node_modules/
+landing/src/
+landing/vite.config.js
+landing/package.json
+landing/package-lock.json
+
+# Dev-only artifacts
+chrome-cdp-temp/
+landing-screens/
+.claude/
+skills/
+
+# Windows-only dev launchers (Linux container uses start_server.sh)
+setup.ps1
+start.ps1
+
+# Tests (not needed at runtime)
+tests/
+pytest.ini
+
+# Documentation
+docs/
+*.md
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db

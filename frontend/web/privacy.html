@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sign2Text Privacy Policy — How we handle your information when using our real-time sign language translation services." />
+  <title>Privacy Policy — Sign2Text</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/legal.css" />
+</head>
+<body>
+  <!--
+    CANONICAL SOURCE: docs/PRIVACY_POLICY.md
+    To update this page, edit docs/PRIVACY_POLICY.md and then update the
+    content below to match. This keeps the Markdown file as the single
+    source of truth while serving a styled public HTML page.
+  -->
+  <nav class="legal-nav" role="navigation" aria-label="Site navigation">
+    <a href="/" class="legal-nav-brand">
+      <span class="brand-icon" aria-hidden="true">&#10022;</span>
+      <span>Sign2Text</span>
+    </a>
+    <a href="/" class="legal-nav-back">&larr; Back to Home</a>
+  </nav>
+
+  <main class="legal-page" id="main">
+    <article class="legal-content">
+      <h1>Privacy Policy for Sign2Text</h1>
+      <p class="legal-updated"><strong>Last Updated:</strong> April 2026</p>
+      <p class="legal-intro">This Privacy Policy describes how Sign2Text (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;the Application&rdquo;) handles information in connection with your use of our services. Sign2Text is a real-time translation tool featuring ASL, Voice, and Letter translation modes.</p>
+
+      <hr />
+
+      <h2>1. Information We Process</h2>
+
+      <h3>1.1 Real-Time Media Data</h3>
+      <p>To provide translation services, the Application processes camera and microphone data:</p>
+      <ul>
+        <li><strong>Camera Frames (ASL &amp; Letter Modes):</strong> When you enable your camera, individual frames are transmitted to the backend for real-time analysis by AI models. We process these frames in-memory.</li>
+        <li><strong>Microphone Audio (Voice Mode):</strong> When you enable your microphone, audio streams are transmitted to the backend and then to third-party providers for Speech-to-Text conversion.</li>
+        <li><strong>Retention:</strong> In the current implementation, based on a review of the source code, raw camera video, individual frames, and audio recordings are processed in-memory and are not persistently stored by the Application on its backend after the active session is complete.</li>
+      </ul>
+
+      <h3>1.2 User-Provided Information</h3>
+      <ul>
+        <li><strong>Contributor Program:</strong> If you voluntarily submit your information via our &ldquo;Contribute&rdquo; form, we collect your <strong>email address</strong>. This information is used to manage project outreach and program updates.</li>
+        <li><strong>Administrative Access:</strong> For authorized administrators, the Application may log basic data regarding administrative actions (e.g., status updates, exports) for security and auditing purposes.</li>
+      </ul>
+
+      <h3>1.3 System &amp; Storage Data</h3>
+      <p>The Application uses browser-based storage and session handling to improve your experience:</p>
+      <ul>
+        <li><strong>Browser LocalStorage:</strong> Translation history and certain local preferences or settings (such as language selection and caption size) may be stored in browser local storage. This data remains on your device until you clear your browser cache or history.</li>
+        <li><strong>Authenticated Sessions:</strong> If you use features requiring authentication (such as Voice mode with Google Sign-In), cookie-backed sessions may be used to maintain your authenticated access. These sessions may store basic profile identifiers provided by the authentication provider.</li>
+      </ul>
+
+      <hr />
+
+      <h2>2. Third-Party Services</h2>
+      <p>Sign2Text integrates with several third-party providers to perform advanced AI and authentication tasks. Your data is handled according to their respective policies when these features are active:</p>
+      <ul>
+        <li><strong>Google Cloud:</strong> Used for user authentication (OAuth), Speech-to-Text, and Text-to-Speech services.</li>
+        <li><strong>Microsoft Azure:</strong> Used for text translation services.</li>
+        <li><strong>Ollama:</strong> Used specifically for ASL gloss-to-English normalization. Depending on the project configuration, this may run locally on the server or via a remote endpoint.</li>
+      </ul>
+      <p class="legal-note"><em>Note: The availability and behavior of these integrations depend on the specific deployment and environment configuration. Some integrations and data flows depend on deployment configuration and enabled services.</em></p>
+
+      <hr />
+
+      <h2>3. Data Storage and Security</h2>
+      <ul>
+        <li><strong>Local Infrastructure:</strong> Basic project data, such as contributor email leads, is stored in a local database (SQLite) on the configured backend for the active deployment.</li>
+        <li><strong>Security Measures:</strong> We implement standard security practices designed to protect your information, including restricted administrative access. However, no method of transmission or electronic storage is 100% secure.</li>
+        <li><strong>Deployment Variability:</strong> Because Sign2Text is a flexible project that can be deployed in various environments (local, hosted, or proxied), the specific data handling and security properties may vary based on how the Application is configured.</li>
+      </ul>
+
+      <hr />
+
+      <h2>4. Your Choices</h2>
+      <ul>
+        <li><strong>Local History:</strong> You can clear your translation history or preferences at any time by clearing your browser&rsquo;s LocalStorage or using built-in &ldquo;Clear History&rdquo; features where available.</li>
+        <li><strong>Permissions:</strong> You can revoke camera and microphone permissions through your browser settings at any time.</li>
+      </ul>
+
+      <hr />
+
+      <h2>5. Changes to This Privacy Policy</h2>
+      <p>We reserve the right to modify this Privacy Policy at any time. Changes will be effective upon posting the updated Privacy Policy. Your continued use of the Application after such changes constitutes your acceptance of the updated Privacy Policy.</p>
+
+      <hr />
+
+      <h2>6. Contact Us</h2>
+      <p>If you have questions about this Privacy Policy, please contact Koko Jamgotchian.</p>
+    </article>
+  </main>
+
+  <footer class="legal-footer" role="contentinfo">
+    <p>&copy; <script>document.currentScript.parentElement.prepend(new Date().getFullYear() + ' ')</script>Sign2Text. All rights reserved.</p>
+    <nav class="legal-footer-links" aria-label="Legal pages">
+      <span class="legal-footer-current" aria-current="page">Privacy Policy</span>
+      <a href="/terms.html">Terms of Use</a>
+    </nav>
+  </footer>
+</body>
+</html>

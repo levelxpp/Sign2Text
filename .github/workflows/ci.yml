@@ -1,0 +1,145 @@
+name: CI
+
+# Blocking CI for the published source.
+#
+# Every job here must pass. The scope is defined by pytest markers rather than a
+# list of filenames — see pytest.ini and docs/TESTING_STATUS.md:
+#
+#     pytest -m "not requires_private_assets and not legacy_auth"
+#
+# Only two categories are outside this scope, and each one is annotated with a
+# written reason at the test itself:
+#
+#   requires_private_assets  needs something intentionally excluded from this
+#                            repository (model weights, teammate-owned modules,
+#                            private deployment scripts) or a physical camera.
+#   legacy_auth              asserts the cookie-backed Google OAuth contract that
+#                            was replaced by Supabase JWT, so it describes an
+#                            implementation the published module no longer has.
+#
+# Nothing is excluded merely for failing. The complete suite, including both
+# categories, still runs in .github/workflows/diagnostic-tests.yml.
+#
+# This workflow requires no secrets, no credentials, and no model weights.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Public test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.test-cpu.txt
+
+      - name: Install CPU test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.test-cpu.txt
+
+      - name: Run public tests
+        env:
+          S2T_SKIP_DOTENV: '1'
+        run: |
+          pytest -v -m "not requires_private_assets and not legacy_auth"
+
+  compile:
+    name: Python syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Byte-compile all published Python
+        run: python -m compileall -q backend tests tools start.py tunnel_proxy.py
+
+  landing:
+    name: Landing site build (Node 20)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: landing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: landing/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  docs:
+    name: Documentation links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Relative Markdown links only. External URLs are not fetched, so this
+      # cannot fail because a third-party site is down.
+      - name: Check relative Markdown links resolve
+        run: |
+          python - <<'PY'
+          import os, re, sys
+
+          link = re.compile(r'\[[^\]]*\]\(([^)\s]+)\)')
+          skip = ("http://", "https://", "mailto:", "#", "tel:")
+          broken, checked = [], 0
+
+          for dirpath, dirnames, filenames in os.walk("."):
+              dirnames[:] = [d for d in dirnames
+                             if d not in {".git", "node_modules", "dist", "__pycache__"}]
+              for name in filenames:
+                  if not name.lower().endswith(".md"):
+                      continue
+                  path = os.path.join(dirpath, name)
+                  with open(path, encoding="utf-8", errors="replace") as fh:
+                      text = fh.read()
+                  for match in link.finditer(text):
+                      target = match.group(1).strip()
+                      if target.startswith(skip):
+                          continue
+                      target = target.split("#", 1)[0]
+                      if not target:
+                          continue
+                      checked += 1
+                      if not os.path.exists(os.path.normpath(os.path.join(dirpath, target))):
+                          broken.append(f"{os.path.relpath(path)} -> {target}")
+
+          print(f"relative markdown links checked: {checked}")
+          if broken:
+              print(f"BROKEN: {len(broken)}")
+              for item in broken:
+                  print("  " + item)
+              sys.exit(1)
+          print("BROKEN: 0")
+          PY

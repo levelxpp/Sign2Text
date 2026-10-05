@@ -1,0 +1,103 @@
+name: Diagnostic tests (full inherited suite)
+
+# Runs the ENTIRE test suite, including everything the blocking CI workflow
+# deselects. It exists to keep known incompatibilities visible without putting a
+# permanently red check on every push and pull request.
+#
+# Expect failures here. They are documented, categorised, and tracked in
+# docs/TESTING_STATUS.md — they are not hidden and not suppressed. Two groups
+# cannot pass in this environment by design:
+#
+#   requires_private_assets  needs trained model weights, teammate-owned
+#                            modules, private deployment scripts, or a physical
+#                            camera — none of which are published here. Some of
+#                            these drive a full app lifespan and will hang or
+#                            time out on a runner with no camera.
+#   legacy_auth              asserts the cookie-backed Google OAuth session
+#                            contract that Supabase JWT replaced.
+#
+# Manual trigger plus a weekly run. Deliberately NOT on push/pull_request: a
+# job that is always red teaches everyone to ignore CI.
+#
+# Requires no secrets, no credentials, and no model weights.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 06:00 UTC every Monday.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  full-suite:
+    name: Full suite (known failures expected)
+    runs-on: ubuntu-latest
+    # Bounded because requires_private_assets tests block on camera/model access
+    # that never becomes available on a runner.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.test-cpu.txt
+
+      - name: Install CPU test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.test-cpu.txt
+          pip install pytest-timeout
+
+      # `continue-on-error` keeps the job green so the weekly run is not a
+      # standing red mark; the real result is captured in the summary and the
+      # uploaded artifact below, and the raw exit code is recorded rather than
+      # discarded.
+      - name: Run the complete suite
+        id: full
+        continue-on-error: true
+        env:
+          S2T_SKIP_DOTENV: '1'
+        run: |
+          set +e
+          pytest -v --timeout=120 --timeout-method=thread \
+            | tee pytest-full.log
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish summary
+        if: always()
+        run: |
+          {
+            echo "# Diagnostic test run"
+            echo
+            echo "Full inherited suite, including tests that cannot pass in this"
+            echo "environment by design. See \`docs/TESTING_STATUS.md\`."
+            echo
+            echo "**pytest exit code:** \`${{ steps.full.outputs.exit_code }}\`"
+            echo
+            echo '```'
+            tail -n 40 pytest-full.log || echo "no log captured"
+            echo '```'
+            echo
+            echo "## Expected non-passing groups"
+            echo
+            echo "| Marker | Why it cannot pass here |"
+            echo "| --- | --- |"
+            echo "| \`requires_private_assets\` | Needs model weights, teammate-owned modules, private deployment scripts, or a camera. |"
+            echo "| \`legacy_auth\` | Asserts the cookie-session contract replaced by Supabase JWT. |"
+            echo
+            echo "A failure **outside** those two groups is a real regression and"
+            echo "should also be failing the blocking \`CI\` workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload pytest log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-full-log
+          path: pytest-full.log
+          retention-days: 14
+          if-no-files-found: warn

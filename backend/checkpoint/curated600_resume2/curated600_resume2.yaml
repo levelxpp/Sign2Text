@@ -1,0 +1,189 @@
+﻿name: "curated600_resume2"
+run_dir: "experiments/2026-04-29/curated600_resume2"
+# Curated 604-class vocab = union(proposal_600 conversational core+top-frequency fill,
+# friend's 347-class vocab). Same architecture as friend347-ctr (CTR-GCN + Conformer).
+
+system:
+  root: "."
+  num_workers: 4
+  priority: "high"
+  vram_fraction: 0.8
+
+data:
+  train_path: "data/training_ready/asl_citizen_curated600_arrow/asl_citizen_train.arrow"
+  val_path: "data/training_ready/asl_citizen_curated600_arrow/asl_citizen_val.arrow"
+  input_shape: [null, 64, 86, 16]
+  task_mode: "classification"
+  tokenizer_name: "HuggingFaceTB/SmolLM2-135M"
+  normalize: "center_only"
+  force_reprocess: false
+  use_synonym_map: false
+
+  augmentations:
+    - type: "GeometricAugmentation"
+      rotation_range: 15.0
+      scale_range: [0.8, 1.2]
+    - type: "SignalAugmentation"
+      noise_std: 0.01
+      mask_prob: 0.05
+    - type: "TemporalScalingAugmentation"
+      scale_range: [0.8, 1.2]
+    - type: "AdvancedMaskingAugmentation"
+      temporal_mask_prob: 0.2
+      temporal_max_ratio: 0.2
+      temporal_num_chunks: 2
+      spatial_mask_prob: 0.2
+
+  feature_engineering:
+    - type: "KinematicsBlock"
+    - type: "BoneFeatureBlock"
+      graph_layout: "mediapipe86"
+      graph_strategy: "spatial"
+
+training:
+  optimizer: "adamw"
+  lr: 0.0005
+  weight_decay: 0.1
+  epochs: 200
+  batch_size: 256
+  drop_last: true
+  sampler: "bucket"
+  max_vram_tokens: 20000
+  use_amp: true
+  pin_memory: true
+  prefetch_factor: 3
+  persistent_workers: true
+  loss:
+    type: "LabelSmoothing"
+    smoothing: 0.1
+  metrics:
+    - type: "Accuracy"
+    - type: "TopKAccuracy"
+      k: 5
+  scheduler:
+    type: "linear_decay"
+    warmup_epochs: 5
+    decay_epochs: 195
+    min_lr: 0.00005
+
+model:
+  layers:
+
+    - type: "FeatureNormalizationBlock"
+      in_dim: 16
+
+    - type: "ParallelStreamsBlock"
+      streams:
+        - name: "macro_body"
+          layers:
+            - type: "SelectNodesBlock"
+              indices: [0,1,2,3,4,5,6,7, 8,9,10, 44, 65]
+            - type: "LinearBlock"
+              in_dim: 16
+              out_dim: 128
+              dropout: 0.3
+            - type: "CTRGCNBlock"
+              in_dim: 128
+              out_dim: 128
+              num_nodes: 13
+            - type: "SpatialAttentionPool"
+              in_dim: 128
+
+        - name: "micro_left_hand"
+          layers:
+            - type: "SelectNodesBlock"
+              indices: [44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]
+            - type: "LinearBlock"
+              in_dim: 16
+              out_dim: 128
+              dropout: 0.3
+            - type: "CTRGCNBlock"
+              in_dim: 128
+              out_dim: 128
+              num_nodes: 21
+            - type: "SpatialAttentionPool"
+              in_dim: 128
+
+        - name: "micro_right_hand"
+          layers:
+            - type: "SelectNodesBlock"
+              indices: [65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85]
+            - type: "LinearBlock"
+              in_dim: 16
+              out_dim: 128
+              dropout: 0.3
+            - type: "CTRGCNBlock"
+              in_dim: 128
+              out_dim: 128
+              num_nodes: 21
+            - type: "SpatialAttentionPool"
+              in_dim: 128
+
+        - name: "micro_face"
+          layers:
+            - type: "SelectNodesBlock"
+              indices: [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43]
+            - type: "LinearBlock"
+              in_dim: 16
+              out_dim: 64
+              dropout: 0.3
+            - type: "CTRGCNBlock"
+              in_dim: 64
+              out_dim: 64
+              num_nodes: 33
+            - type: "SpatialAttentionPool"
+              in_dim: 64
+
+    - type: "ConcatBlock"
+      dim: -1
+
+    - type: "LinearBlock"
+      in_dim: 448
+      out_dim: 256
+      dropout: 0.3
+
+    - type: "PositionalEncoding"
+      in_dim: 256
+
+    - type: "ConformerBlock"
+      in_dim: 256
+      num_heads: 4
+      dropout: 0.3
+      cnn_kernel_size: 15
+    - type: "ConformerBlock"
+      in_dim: 256
+      num_heads: 4
+      dropout: 0.3
+      cnn_kernel_size: 11
+
+    - type: "TemporalPoolBlock"
+      stride: 2
+      pool_type: "max"
+
+    - type: "ConformerBlock"
+      in_dim: 256
+      num_heads: 4
+      dropout: 0.3
+      cnn_kernel_size: 7
+    - type: "ConformerBlock"
+      in_dim: 256
+      num_heads: 4
+      dropout: 0.3
+      cnn_kernel_size: 5
+
+    - type: "TemporalAttentionPool"
+      in_dim: 256
+
+    - type: "LinearBlock"
+      in_dim: 256
+      out_dim: 600
+      use_bn: false
+      activation: null
+
+logging:
+  use_tensorboard: true
+
+checkpointing:
+  monitor_metric: "val_Accuracy"
+  monitor_mode: "max"
+  save_top_k: 3

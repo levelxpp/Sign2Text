@@ -1,0 +1,24 @@
+# Normalise line endings so the repository behaves the same on every platform.
+* text=auto
+
+# Shell scripts MUST be stored and checked out with LF. A CRLF shebang makes
+# Linux fail with `/usr/bin/env: 'bash\r': No such file or directory`, which
+# would break the documented `./setup.sh` / `./start.sh` install path and the
+# helper-script tests. The committed blobs are already LF; this keeps them that
+# way regardless of a contributor's core.autocrlf setting.
+*.sh text eol=lf
+
+# PowerShell scripts are Windows-facing; CRLF is conventional there.
+*.ps1 text eol=crlf
+
+# Binary assets — never transform.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pt binary
+*.pth binary
+*.ckpt binary
+*.pkl binary
+*.onnx binary

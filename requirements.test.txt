@@ -1,0 +1,9 @@
+# Fully pinned test/validation dependencies layered on top of the CUDA runtime
+# environment. For CPU-only machines, use requirements.test-cpu.txt instead.
+
+-r requirements.runtime.txt
+
+iniconfig==2.3.0
+pluggy==1.6.0
+pygments==2.19.2
+pytest==9.0.2

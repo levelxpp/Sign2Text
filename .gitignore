@@ -1,0 +1,99 @@
+# ─── Secrets — never commit ──────────────────────────────────────────────
+# Hard blocks with no re-inclusion exceptions. If you find yourself wanting to
+# add a "!" exception under any of these, don't.
+.env
+.env.*
+!.env.example
+keys/
+*.pem
+*.key
+*.p12
+*.pfx
+**/service-account*.json
+**/google-*-credentials.json
+
+# ─── Databases, collected data, user data ────────────────────────────────
+data/
+*.sqlite
+*.sqlite3
+*.db
+data/collected/
+
+# ─── Model weights & large binaries ──────────────────────────────────────
+# This repository ships model metadata only (architecture, hyperparameters,
+# label maps). Weights are never committed — see MODEL_RESULTS.md.
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.onnx
+*.h5
+*.safetensors
+*.bin
+
+# ─── Datasets & training artifacts ───────────────────────────────────────
+backend/data/*.csv
+events.out.tfevents*
+runs/
+tensorboard/
+checkpoints/
+
+# ─── Virtual environments ────────────────────────────────────────────────
+.venv/
+venv/
+.venv*/
+venv*/
+env/
+
+# ─── Python ──────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+.coverage
+.coverage.*
+htmlcov/
+
+# ─── Node ────────────────────────────────────────────────────────────────
+node_modules/
+landing/dist/
+landing/node_modules/
+.npm/
+
+# ─── Generated at runtime ────────────────────────────────────────────────
+frontend/web/runtime-config.js
+
+# ─── Playwright ──────────────────────────────────────────────────────────
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# ─── Internal / operational (never publish) ──────────────────────────────
+docs/poster_materials/
+landing-screens/
+chrome-cdp-temp/
+packaging/
+tests/manual/
+
+# ─── IDE & OS ────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# ─── Logs & temp ─────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.stackdump

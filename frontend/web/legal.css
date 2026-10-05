@@ -1,0 +1,271 @@
+/* ========================================
+   Sign2Text — Legal Page Stylesheet
+   Shared by: privacy.html, terms.html
+   Aesthetic: Matches landing site tokens
+   ======================================== */
+
+/* --- Design Tokens (subset of landing) --- */
+:root {
+  --color-bg:           #0a0e17;
+  --color-bg-raised:    #111827;
+  --color-surface:      #1c2640;
+  --color-border:       #1e293b;
+  --color-text:         #e2e8f0;
+  --color-text-muted:   #94a3b8;
+  --color-text-dim:     #64748b;
+  --color-accent:       #22d3ee;
+  --color-accent-dim:   rgba(34, 211, 238, 0.1);
+  --color-white:        #ffffff;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --max-width:    800px;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+
+  --ease-out:        cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-fast: 150ms var(--ease-out);
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.65;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+a:hover {
+  opacity: 0.85;
+}
+
+/* --- Nav Bar --- */
+.legal-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+  background: rgba(10, 14, 23, 0.82);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+}
+
+.legal-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-white);
+}
+
+.legal-nav-brand .brand-icon {
+  color: var(--color-accent);
+}
+
+.legal-nav-back {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.legal-nav-back:hover {
+  color: var(--color-white);
+  opacity: 1;
+}
+
+/* --- Main Content --- */
+.legal-page {
+  flex: 1;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 4rem;
+  width: 100%;
+}
+
+.legal-content h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--color-white);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.legal-updated {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  margin-bottom: 1.25rem;
+}
+
+.legal-intro {
+  font-size: 1.02rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+}
+
+.legal-content hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2rem 0;
+}
+
+.legal-content h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.legal-content h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.legal-content p {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.legal-content ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.legal-content ul li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  line-height: 1.8;
+  margin-bottom: 0.5rem;
+}
+
+.legal-content ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-text-dim);
+}
+
+.legal-content ul li strong {
+  color: var(--color-text);
+}
+
+.legal-content p strong {
+  color: var(--color-text);
+}
+
+.legal-note {
+  font-size: 0.88rem;
+  color: var(--color-text-dim);
+  font-style: italic;
+}
+
+.legal-disclaimer {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  line-height: 1.7;
+}
+
+/* --- Footer --- */
+.legal-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--color-text-dim);
+}
+
+.legal-footer p {
+  margin-bottom: 0.75rem;
+}
+
+.legal-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.legal-footer-links a {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  transition: color var(--transition-fast);
+}
+
+.legal-footer-links a:hover {
+  color: var(--color-white);
+  opacity: 1;
+}
+
+.legal-footer-current {
+  color: var(--color-text-dim);
+  font-size: 0.82rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .legal-page {
+    padding: 2.5rem 1rem 3rem;
+  }
+
+  .legal-nav {
+    padding: 0.75rem 1rem;
+  }
+
+  .legal-content h1 {
+    font-size: 1.5rem;
+  }
+
+  .legal-content h2 {
+    font-size: 1.15rem;
+  }
+}
